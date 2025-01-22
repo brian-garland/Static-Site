@@ -30,10 +30,19 @@ async function build() {
     const files = await fs.readdir(contentDir);
     for (const file of files) {
         if (file.endsWith('.md')) {
+            // Skip processing index.md as we'll use the static index.html
+            if (file === 'index.md') continue;
+            
             const markdown = await fs.readFile(path.join(contentDir, file), 'utf-8');
             const html = buildPage(markdown, template);
-            const outFile = path.join(publicDir, file.replace('.md', '.html'));
-            await fs.writeFile(outFile, html);
+            
+            // Create proper URL structure
+            const basename = path.basename(file, '.md');
+            const outPath = path.join(publicDir, basename, 'index.html');
+            
+            // Ensure directory exists
+            await fs.ensureDir(path.dirname(outPath));
+            await fs.writeFile(outPath, html);
         }
     }
 }

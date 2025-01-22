@@ -1,15 +1,25 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = 3000;
 
-// Serve static files from the public directory
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from the static directory
+app.use('/static', express.static(path.join(__dirname, 'static')));
 
-// Fallback to index.html for any unmatched routes
+// Handle all routes
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    const urlPath = req.path === '/' ? '/index' : req.path;
+    const filePath = path.join(__dirname, 'public', urlPath, 'index.html');
+    
+    // Check if the file exists
+    if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+    } else {
+        // Fallback to index.html for any unmatched routes
+        res.sendFile(path.join(__dirname, 'public/index.html'));
+    }
 });
 
 app.listen(PORT, () => {
